@@ -11,40 +11,37 @@ public class Tablero {
         return casillas[c.getX()][c.getY()];
     }
 
+    // 🔹 Esta es la versión que TableroGUI necesita:
+    public Pieza getPieza(int fila, int col) {
+        return casillas[fila][col];
+    }
+
     public void setPieza(Coordenada c, Pieza p) {
         casillas[c.getX()][c.getY()] = p;
     }
 
-    // 🔹 Mueve una pieza en el tablero
     public void moverPieza(Coordenada origen, Coordenada destino) {
         Pieza pieza = getPieza(origen);
         if (pieza == null) return;
 
-        // Validar si puede moverse (puedes personalizarlo)
         pieza.mover(destino);
-
-        // Actualizar tablero
         setPieza(destino, pieza);
         setPieza(origen, null);
-
-        // Actualizar posición interna de la pieza
         pieza.setPos(destino);
     }
 
-    // 🔹 Inicializa todas las piezas del tablero
     public void inicializar() {
-        // --- Peones blancos ---
+        // Peones blancos
         for (int col = 0; col < 8; col++) {
             setPieza(new Coordenada(6, col), new Peon(new Coordenada(6, col), "blanco", this));
         }
 
-        // --- Peones negros ---
+        // Peones negros
         for (int col = 0; col < 8; col++) {
             setPieza(new Coordenada(1, col), new Peon(new Coordenada(1, col), "negro", this));
         }
 
-        // --- Piezas mayores ---
-        // Blancas
+        // Piezas mayores blancas
         setPieza(new Coordenada(7, 0), new Torre(new Coordenada(7, 0), "blanco", this));
         setPieza(new Coordenada(7, 1), new Caballo(new Coordenada(7, 1), "blanco", this));
         setPieza(new Coordenada(7, 2), new Alfil(new Coordenada(7, 2), "blanco", this));
@@ -54,7 +51,7 @@ public class Tablero {
         setPieza(new Coordenada(7, 6), new Caballo(new Coordenada(7, 6), "blanco", this));
         setPieza(new Coordenada(7, 7), new Torre(new Coordenada(7, 7), "blanco", this));
 
-        // Negras
+        // Piezas mayores negras
         setPieza(new Coordenada(0, 0), new Torre(new Coordenada(0, 0), "negro", this));
         setPieza(new Coordenada(0, 1), new Caballo(new Coordenada(0, 1), "negro", this));
         setPieza(new Coordenada(0, 2), new Alfil(new Coordenada(0, 2), "negro", this));
@@ -63,9 +60,5 @@ public class Tablero {
         setPieza(new Coordenada(0, 5), new Alfil(new Coordenada(0, 5), "negro", this));
         setPieza(new Coordenada(0, 6), new Caballo(new Coordenada(0, 6), "negro", this));
         setPieza(new Coordenada(0, 7), new Torre(new Coordenada(0, 7), "negro", this));
-    }
-
-    public Pieza getPieza(int fila, int col) {
-        throw new UnsupportedOperationException("Unimplemented method 'getPieza'");
     }
 }

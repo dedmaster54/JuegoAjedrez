@@ -9,7 +9,6 @@ public class Torre extends Pieza {
         super(pos, color, tablero);
     }
 
-    @Override
     public void mover(Coordenada destino) {
         if (obtenerMovimientosPosibles().contains(destino)) {
             tablero.setPieza(pos, null);
@@ -18,7 +17,6 @@ public class Torre extends Pieza {
         }
     }
 
-    @Override
     public List<Coordenada> obtenerMovimientosPosibles() {
         List<Coordenada> movimientos = new ArrayList<>();
 
@@ -46,7 +44,6 @@ public class Torre extends Pieza {
         return movimientos;
     }
 
-    @Override
     public void eliminar() {
         tablero.setPieza(pos, null);
     }
