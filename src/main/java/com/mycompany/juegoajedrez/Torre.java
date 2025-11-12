@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Torre extends Pieza {
+    
 
     public Torre(Coordenada pos, String color, Tablero tablero) {
         super(pos, color, tablero);

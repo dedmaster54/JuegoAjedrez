@@ -24,4 +24,12 @@ public class Coordenada {
     public String toString() {
         return "(" + x + "," + y + ")";
     }
+
+    public int getFila() {
+        throw new UnsupportedOperationException("Unimplemented method 'getFila'");
+    }
+
+    public int getColumna() {
+        throw new UnsupportedOperationException("Unimplemented method 'getColumna'");
+    }
 }

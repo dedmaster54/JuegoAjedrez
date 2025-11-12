@@ -1,8 +1,13 @@
 package com.mycompany.juegoajedrez;
 
-public class JuegoAjedrez {
+import javax.swing.SwingUtilities;
 
+public class JuegoAjedrez {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        SwingUtilities.invokeLater(() -> {
+            Tablero tablero = new Tablero();
+            tablero.inicializar();  
+            new TableroGUI(tablero).setVisible(true);
+        });
     }
 }

@@ -10,7 +10,8 @@ public abstract class Pieza {
         this.pos = pos;
         this.color = color;
         this.tablero = tablero;
-    }
+        }
+        
 
     public Coordenada getPos() { 
 	return pos; 

@@ -8,18 +8,20 @@ public class TableroGUI extends JFrame {
 
     private JPanel panelTablero;
     private JButton[][] casillas = new JButton[8][8];
+    private Tablero tablero;
 
-    // Variables para manejar los clics
     private int filaSeleccionada = -1;
     private int colSeleccionada = -1;
 
-    public TableroGUI() {
+    public TableroGUI(Tablero tablero) {
+        this.tablero = tablero;
+
         setTitle("Ajedrez");
         setSize(600, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         crearTablero();
-        colocarPiezas();
+        actualizarVista();
     }
 
     private void crearTablero() {
@@ -30,13 +32,11 @@ public class TableroGUI extends JFrame {
                 JButton boton = new JButton();
                 boton.setPreferredSize(new Dimension(70, 70));
 
-                // Colores de tablero
                 if ((fila + col) % 2 == 0)
-                    boton.setBackground(new Color(240, 217, 181)); // claro
+                    boton.setBackground(new Color(240, 217, 181));
                 else
-                    boton.setBackground(new Color(181, 136, 99));  // oscuro
+                    boton.setBackground(new Color(181, 136, 99));
 
-                // Acción al hacer clic
                 final int f = fila;
                 final int c = col;
                 boton.addActionListener(e -> manejarClick(f, c));
@@ -49,28 +49,42 @@ public class TableroGUI extends JFrame {
         add(panelTablero);
     }
 
-    private void colocarPiezas() {
-        // --- PIEZAS BLANCAS ---
-        setIcono(7, 0, "torreB.png");
-        setIcono(7, 1, "caballoB.png");
-        setIcono(7, 2, "alfilB.png");
-        setIcono(7, 3, "reinaB.png");
-        setIcono(7, 4, "reyB.png");
-        setIcono(7, 5, "alfilB.png");
-        setIcono(7, 6, "caballoB.png");
-        setIcono(7, 7, "torreB.png");
-        for (int c = 0; c < 8; c++) setIcono(6, c, "peonB.png");
+    private void manejarClick(int fila, int col) {
+        if (filaSeleccionada == -1) {
+            // Seleccionamos la pieza
+            if (tablero.getPieza(fila, col) != null) {
+                filaSeleccionada = fila;
+                colSeleccionada = col;
+                casillas[fila][col].setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+            }
+        } else {
+            // Intentamos mover la pieza
+            Coordenada origen = new Coordenada(filaSeleccionada, colSeleccionada);
+            Coordenada destino = new Coordenada(fila, col);
 
-        // --- PIEZAS NEGRAS ---
-        setIcono(0, 0, "torreN.png");
-        setIcono(0, 1, "caballoN.png");
-        setIcono(0, 2, "alfilN.png");
-        setIcono(0, 3, "reinaN.png");
-        setIcono(0, 4, "reyN.png");
-        setIcono(0, 5, "alfilN.png");
-        setIcono(0, 6, "caballoN.png");
-        setIcono(0, 7, "torreN.png");
-        for (int c = 0; c < 8; c++) setIcono(1, c, "peonN.png");
+            tablero.moverPieza(origen, destino);  // << Llama al modelo
+
+            // Quita borde y refresca vista
+            casillas[filaSeleccionada][colSeleccionada].setBorder(null);
+            filaSeleccionada = -1;
+            colSeleccionada = -1;
+
+            actualizarVista();
+        }
+    }
+
+    public void actualizarVista() {
+        for (int fila = 0; fila < 8; fila++) {
+            for (int col = 0; col < 8; col++) {
+                Pieza pieza = tablero.getPieza(fila, col);
+                if (pieza != null) {
+                    String nombreImg = pieza.getClass().getSimpleName().toLowerCase() + "_" + pieza.getColor() + ".png";
+                    setIcono(fila, col, nombreImg);
+                } else {
+                    casillas[fila][col].setIcon(null);
+                }
+            }
+        }
     }
 
     private void setIcono(int fila, int col, String nombreArchivo) {
@@ -81,40 +95,6 @@ public class TableroGUI extends JFrame {
         } catch (Exception e) {
             System.out.println("No se pudo cargar: " + nombreArchivo);
         }
-    }
-
-    private void manejarClick(int fila, int col) {
-        JButton boton = casillas[fila][col];
-
-        // Si no hay una pieza seleccionada
-        if (filaSeleccionada == -1 && colSeleccionada == -1) {
-            if (boton.getIcon() != null) { // Solo selecciona si hay pieza
-                filaSeleccionada = fila;
-                colSeleccionada = col;
-                boton.setBorder(BorderFactory.createLineBorder(Color.RED, 3)); // marca selección
-            }
-        } else {
-            // Mover pieza
-            JButton origen = casillas[filaSeleccionada][colSeleccionada];
-            Icon icono = origen.getIcon();
-
-            // Quita borde de selección
-            origen.setBorder(null);
-
-            // Mueve la imagen
-            boton.setIcon(icono);
-            origen.setIcon(null);
-
-            // Reinicia selección
-            filaSeleccionada = -1;
-            colSeleccionada = -1;
-        }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new TableroGUI().setVisible(true);
-        });
     }
 }
 
