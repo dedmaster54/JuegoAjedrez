@@ -6,13 +6,80 @@ import javax.swing.*;
 
 public class TableroGUI extends JFrame {
 
+        
+    private ServidorAjedrez servidor;
+    private ClienteAjedrez cliente;
+    private boolean soyServidor = false;
+
+
+    private GestorTurnos gestorTurnos = new GestorTurnos();
     private JPanel panelTablero;
     private JButton[][] casillas = new JButton[8][8];
     private Tablero tablero;
+    private void escucharMovimientos() {
+    new Thread(() -> {
+        while (true) {
+            try {
+                MovimientoRed mov = null;
+
+                if (soyServidor && servidor != null) {
+                    mov = servidor.recibirMovimiento();
+                } else if (!soyServidor && cliente != null) {
+                    mov = cliente.recibirMovimiento();
+                }
+
+                if (mov == null) continue;
+
+                Coordenada origen = new Coordenada(mov.origenX, mov.origenY);
+                Coordenada destino = new Coordenada(mov.destinoX, mov.destinoY);
+
+                tablero.moverPieza(origen, destino);
+
+                SwingUtilities.invokeLater(() -> actualizarVista());
+
+            } catch (Exception e) {
+                System.out.println("Error recibiendo movimiento: " + e.getMessage());
+                break;
+            }
+                }
+            }).start();
+        }
+
 
     private int filaSeleccionada = -1;
     private int colSeleccionada = -1;
+    private void configurarVentana() {
+    setTitle("Ajedrez en red");
+    setSize(600, 600);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLocationRelativeTo(null);
+}
 
+
+    public TableroGUI(Tablero tablero, ServidorAjedrez servidor) {
+    this.tablero = tablero;
+    this.servidor = servidor;
+    soyServidor = true;
+
+    configurarVentana();
+    crearTablero();
+    escucharMovimientos();
+    actualizarVista();
+                            }
+
+    public TableroGUI(Tablero tablero, ClienteAjedrez cliente) {
+    this.tablero = tablero;
+    this.cliente = cliente;
+    soyServidor = false;
+
+
+    configurarVentana();
+    crearTablero();
+    escucharMovimientos();
+    actualizarVista();
+                            }
+
+    
     public TableroGUI(Tablero tablero) {
         this.tablero = tablero;
 
@@ -51,18 +118,53 @@ public class TableroGUI extends JFrame {
 
     private void manejarClick(int fila, int col) {
         if (filaSeleccionada == -1) {
-            // Seleccionamos la pieza
-            if (tablero.getPieza(fila, col) != null) {
-                filaSeleccionada = fila;
-                colSeleccionada = col;
-                casillas[fila][col].setBorder(BorderFactory.createLineBorder(Color.RED, 3));
-            }
-        } else {
+
+    Pieza p = tablero.getPieza(fila, col);
+
+    if (p != null) {
+
+        if (!gestorTurnos.esTurno(p.getColor())) {
+            System.out.println("No es turno de " + p.getColor());
+            return;
+        }
+
+        filaSeleccionada = fila;
+        colSeleccionada = col;
+        casillas[fila][col].setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+        }
+    }
+        else {
             // Intentamos mover la pieza
             Coordenada origen = new Coordenada(filaSeleccionada, colSeleccionada);
             Coordenada destino = new Coordenada(fila, col);
 
-            tablero.moverPieza(origen, destino);  // << Llama al modelo
+           Pieza piezaAMover = tablero.getPieza(origen);
+
+            if (piezaAMover != null) {
+
+                
+                if (!gestorTurnos.esTurno(piezaAMover.getColor())) {
+                    System.out.println("No es tu turno.");
+                    return;
+                }
+
+                tablero.moverPieza(origen, destino);
+                // Enviar movimiento por red
+                    MovimientoRed mov = new MovimientoRed(
+                        origen.getX(), origen.getY(),
+                        destino.getX(), destino.getY()
+                    );
+
+                    if (soyServidor && servidor != null) {
+                        servidor.enviarMovimiento(mov);
+                    }
+                    if (!soyServidor && cliente != null) {
+                        cliente.enviarMovimiento(mov);
+                    }
+
+                
+                gestorTurnos.cambiarTurno();
+            }
 
             // Quita borde y refresca vista
             casillas[filaSeleccionada][colSeleccionada].setBorder(null);
@@ -96,5 +198,6 @@ public class TableroGUI extends JFrame {
             System.out.println("No se pudo cargar: " + nombreArchivo);
         }
     }
+    
 }
 
